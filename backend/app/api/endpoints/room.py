@@ -7,6 +7,7 @@ from typing import List
 from app import crud
 from app.api import deps
 from app.schemas.room import Room, RoomCreate
+from app.schemas.user import UserCreate
 
 router = APIRouter()
 
@@ -22,9 +23,10 @@ def create_room(
     user_id: int # Temporary: assume user_id is passed as query param for host
 ) -> Room:
     # Ensure the user exists or create them
-    user = crud.user.get_user_by_id(db=db, user_id=user_id)
+    username = f"User_{user_id}"
+    user = crud.user.get_user_by_username(db=db, username=username)
     if not user:
-        user_in = UserCreate(username=f"User_{user_id}")
+        user_in = UserCreate(username=username)
         user = crud.user.create_user(db=db, user=user_in)
     
     room_code = generate_room_code()

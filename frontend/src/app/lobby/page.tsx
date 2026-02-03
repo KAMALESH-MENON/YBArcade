@@ -8,6 +8,7 @@ export default function LobbyPage() {
   const [roomCode, setRoomCode] = useState("");
   const [clientId, setClientId] = useState<number | null>(null);
   const router = useRouter();
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
   
   useEffect(() => {
     // Generate a unique client ID for the session
@@ -31,13 +32,19 @@ export default function LobbyPage() {
   const handleCreateRoom = async () => {
     if (!clientId) return;
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/rooms?user_id=${clientId}`, {
+      const url = apiBaseUrl
+        ? `${apiBaseUrl}/api/rooms?user_id=${clientId}`
+        : `/api/rooms?user_id=${clientId}`;
+      const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({}),
       });
+      if (!res.ok) {
+        throw new Error(`Create room failed: ${res.status}`);
+      }
       const room = await res.json();
       router.push(`/room/${room.code}?clientId=${clientId}`);
     } catch (error) {

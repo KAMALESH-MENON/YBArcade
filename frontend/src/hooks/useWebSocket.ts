@@ -3,7 +3,7 @@
 import { useEffect, useContext, useRef, useState } from "react";
 import { GameContext } from "@/contexts/GameContext";
 
-const SOCKET_URL = "ws://127.0.0.1:8000/ws"; // This should be in an env file
+const SOCKET_URL = process.env.NEXT_PUBLIC_WS_BASE_URL || "ws://localhost:8000/ws";
 
 export function useWebSocket(clientId: number) {
   const gameContext = useContext(GameContext);
@@ -48,9 +48,12 @@ export function useWebSocket(clientId: number) {
   }, [gameContext, clientId]);
 
   const sendMessage = (message: any) => {
-    if (socketRef.current) {
-      socketRef.current.send(JSON.stringify(message));
+    if (!socketRef.current) return;
+    if (socketRef.current.readyState !== WebSocket.OPEN) {
+      console.warn("WebSocket not open; message skipped", message);
+      return;
     }
+    socketRef.current.send(JSON.stringify(message));
   };
 
   return { sendMessage, isConnected };

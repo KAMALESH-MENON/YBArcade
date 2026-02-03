@@ -29,13 +29,20 @@ class ConnectionManager:
 
     async def send_personal_message(self, message: Any, client_id: int):
         if client_id in self.active_connections:
-            await self.active_connections[client_id].send_json(message)
+            try:
+                await self.active_connections[client_id].send_json(message)
+            except WebSocketDisconnect:
+                self.disconnect(client_id)
 
     async def broadcast(self, message: Any, room_code: str):
         if room_code in self.room_connections:
-            for client_id in self.room_connections[room_code]:
+            for client_id in list(self.room_connections[room_code]):
                 if client_id in self.active_connections:
-                    await self.active_connections[client_id].send_json(message)
+                    try:
+                        await self.active_connections[client_id].send_json(message)
+                    except WebSocketDisconnect:
+                        self.disconnect(client_id)
+                        self.room_connections[room_code].remove(client_id)
 
 
 manager = ConnectionManager()
