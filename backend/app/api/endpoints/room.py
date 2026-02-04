@@ -4,10 +4,10 @@ import string
 import random
 from typing import List
 
-from app import crud
+from app.models.user import User
+from app import crud, models
 from app.api import deps
 from app.schemas.room import Room, RoomCreate
-from app.schemas.user import UserCreate
 
 router = APIRouter()
 
@@ -20,18 +20,11 @@ def generate_room_code(length: int = 4):
 def create_room(
     *,
     db: Session = Depends(deps.get_db),
-    user_id: int # Temporary: assume user_id is passed as query param for host
+    current_user: User = Depends(deps.get_current_user)
 ) -> Room:
-    # Ensure the user exists or create them
-    username = f"User_{user_id}"
-    user = crud.user.get_user_by_username(db=db, username=username)
-    if not user:
-        user_in = UserCreate(username=username)
-        user = crud.user.create_user(db=db, user=user_in)
-    
     room_code = generate_room_code()
     room_in = RoomCreate(code=room_code)
-    room = crud.room.create_room(db=db, room=room_in, host_id=user.id)
+    room = crud.room.create_room(db=db, room=room_in, host_id=current_user.id)
     return room
 
 @router.get("/rooms", response_model=List[Room])

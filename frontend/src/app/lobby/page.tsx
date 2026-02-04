@@ -1,44 +1,31 @@
 "use client";
 
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useRouter } from "next/navigation";
+import { GameContext } from "@/contexts/GameContext";
 
 export default function LobbyPage() {
   const [roomCode, setRoomCode] = useState("");
-  const [clientId, setClientId] = useState<number | null>(null);
   const router = useRouter();
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+  const gameContext = useContext(GameContext);
   
   useEffect(() => {
-    // Generate a unique client ID for the session
-    const existingClientId = sessionStorage.getItem("clientId");
-    if (existingClientId) {
-      setClientId(parseInt(existingClientId, 10));
-    } else {
-      let newClientId = Math.floor(Math.random() * 1000000);
-      // Ensure clientId is not 0, as it might have special meaning or cause issues
-      if (newClientId === 0) {
-        newClientId = 1; // Or generate again
-      }
-      sessionStorage.setItem("clientId", newClientId.toString());
-      setClientId(newClientId);
+    if (!gameContext?.isAuthenticated) {
+      router.push("/login");
     }
-  }, []);
+  }, [gameContext, router]);
 
-  // Only call useWebSocket if clientId is not null
-  const { sendMessage } = useWebSocket(clientId ?? 0);
+  const { sendMessage } = useWebSocket();
 
   const handleCreateRoom = async () => {
-    if (!clientId) return;
+    if (!gameContext?.currentUserId) return;
     try {
-      const url = apiBaseUrl
-        ? `${apiBaseUrl}/api/rooms?user_id=${clientId}`
-        : `/api/rooms?user_id=${clientId}`;
-      const res = await fetch(url, {
+      const res = await fetch(`/api/rooms?user_id=${gameContext.currentUserId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
         body: JSON.stringify({}),
       });
@@ -46,20 +33,24 @@ export default function LobbyPage() {
         throw new Error(`Create room failed: ${res.status}`);
       }
       const room = await res.json();
-      router.push(`/room/${room.code}?clientId=${clientId}`);
+      router.push(`/room/${room.code}`);
     } catch (error) {
       console.error("Failed to create room:", error);
     }
   };
 
   const handleJoinRoom = () => {
-    if (!clientId) return;
+    if (!gameContext?.currentUserId) return;
     sendMessage({
       type: "join_room",
       room_code: roomCode,
     });
     router.push(`/room/${roomCode}`);
   };
+
+  if (!gameContext?.isAuthenticated) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center p-4 sm:p-8 md:p-16 lg:p-24">

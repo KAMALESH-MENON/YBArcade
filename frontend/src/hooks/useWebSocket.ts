@@ -5,17 +5,17 @@ import { GameContext } from "@/contexts/GameContext";
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_WS_BASE_URL || "ws://localhost:8000/ws";
 
-export function useWebSocket(clientId: number) {
+export function useWebSocket() {
   const gameContext = useContext(GameContext);
   const socketRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    if (!gameContext) return;
+    if (!gameContext || !gameContext.currentUserId) return;
 
-    const { setGameState, setCurrentUserId, setCurrentUsername } = gameContext;
+    const { setGameState, setCurrentUserId, setCurrentUsername, addChatMessage, currentUserId } = gameContext;
 
-    const socket = new WebSocket(`${SOCKET_URL}/${clientId}`);
+    const socket = new WebSocket(`${SOCKET_URL}/${currentUserId}`);
     socketRef.current = socket;
 
     socket.onopen = () => {
@@ -36,7 +36,9 @@ export function useWebSocket(clientId: number) {
         setCurrentUserId(data.user_id);
         setCurrentUsername(data.username);
       } else if (data.type === "room_update" || data.type === "game_state_update") {
-        setGameState(data.state || data); // Update game state with the received data
+        setGameState(prevState => ({ ...prevState, ...(data.state || data) })); // Merge with existing state
+      } else if (data.type === "chat_message") {
+        addChatMessage({ username: data.username, message: data.message });
       }
     };
 
@@ -45,7 +47,7 @@ export function useWebSocket(clientId: number) {
         socketRef.current.close();
       }
     };
-  }, [gameContext, clientId]);
+  }, [gameContext, gameContext.currentUserId]);
 
   const sendMessage = (message: any) => {
     if (!socketRef.current) return;

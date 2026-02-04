@@ -2,9 +2,11 @@ from pydantic import BaseModel
 
 class UserBase(BaseModel):
     username: str
+    email: str
 
 class UserCreate(UserBase):
-    pass
+    password: str
+    client_id: str
 
 class UserUpdate(UserBase):
     pass

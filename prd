@@ -1,0 +1,283 @@
+# **Product Requirements Document (PRD)**
+
+## **Online Multiplayer Arcade Platform**
+
+---
+
+## **1. Product Overview**
+
+### **Product Name (Working Title)**
+
+ArcadeHub (name can change later)
+
+### **Product Vision**
+
+To build a web-based multiplayer arcade platform where users can play social deduction and casual multiplayer games online with friends or strangers, starting with an **Undercover game**, and expanding to more games over time.
+
+### **Problem Statement**
+
+Most casual multiplayer games are either:
+
+* App-only (mobile installs required)
+* Limited to a single game
+* Not easy to play instantly with friends via browser
+
+Users want:
+
+* Quick access
+* Browser-based multiplayer games
+* Social, fun, low-commitment gameplay
+
+### **Solution**
+
+A centralized **web arcade platform** that:
+
+* Hosts multiple multiplayer games
+* Requires minimal setup
+* Allows room-based real-time gameplay
+* Supports gradual addition of new games
+
+---
+
+## **2. Goals & Objectives**
+
+### **Primary Goals**
+
+* Launch a stable multiplayer arcade platform
+* Successfully release **Undercover** as the first game
+* Enable real-time multiplayer interactions
+
+### **Secondary Goals**
+
+* Design the platform to be **game-extensible**
+* Support both private rooms and public matches
+* Build a scalable backend for future games
+
+---
+
+## **3. Target Users**
+
+### **Primary Users**
+
+* College students
+* Friends playing remotely
+* Casual gamers
+* Office teams (fun activities / icebreakers)
+
+### **User Personas**
+
+1. **Casual Player**
+   Wants quick, fun games without downloads
+2. **Group Host**
+   Wants to create a private room and invite friends
+3. **Solo Player**
+   Wants to join random public rooms
+
+---
+
+## **4. Key Features**
+
+### **4.1 Platform-Level Features**
+
+#### **User Access**
+
+* Guest login (username only)
+* Optional future account system
+
+#### **Lobby System**
+
+* Create room
+* Join room via code
+* Public matchmaking (future)
+
+#### **Real-Time Multiplayer**
+
+* Live game state updates
+* Player actions synced instantly
+
+#### **Game Selector**
+
+* View available games
+* Launch selected game inside room
+
+---
+
+### **4.2 Game 1: Undercover**
+
+#### **Game Description**
+
+A social deduction game where:
+
+* Players receive secret roles
+* One or more players are “Undercover”
+* Players describe a word without revealing it
+* Group votes to eliminate suspected players
+
+#### **Roles**
+
+* Civilian
+* Undercover
+* Optional: Mr. White (future enhancement)
+
+#### **Gameplay Flow**
+
+1. Room created
+2. Players join
+3. Roles assigned secretly
+4. Word distribution
+5. Turn-based descriptions
+6. Voting phase
+7. Elimination
+8. Win condition check
+9. Game ends
+
+#### **Rules**
+
+* Civilians win if all undercovers are eliminated
+* Undercover wins if they match or outnumber civilians
+
+---
+
+## **5. User Flow**
+
+### **High-Level Flow**
+
+1. User opens website
+2. Enters username
+3. Creates or joins a room
+4. Selects game (Undercover)
+5. Game lobby opens
+6. Game starts
+7. Game ends → option to replay or exit
+
+---
+
+## **6. Functional Requirements**
+
+### **Frontend**
+
+* Responsive UI (desktop & mobile)
+* Game lobby UI
+* Real-time updates without refresh
+* Clear turn indicators
+* Voting UI
+
+### **Backend**
+
+* Room management
+* Player session handling
+* Game state management
+* Real-time communication (WebSockets)
+* Role & word assignment logic
+
+### **Multiplayer**
+
+* Real-time events:
+
+  * Player join/leave
+  * Turn updates
+  * Votes
+  * Game state changes
+
+---
+
+## **7. Non-Functional Requirements**
+
+### **Performance**
+
+* Handle 6–12 players per room
+* Minimal latency during gameplay
+
+### **Scalability**
+
+* Ability to add new games without rewriting core logic
+* Modular game engine approach
+
+### **Security**
+
+* Prevent cheating (no role leaks)
+* Secure WebSocket communication
+
+### **Reliability**
+
+* Handle player disconnects gracefully
+* Reassign host if needed
+
+---
+
+## **8. Tech Stack (Proposed)**
+
+### **Frontend**
+
+* React / Next.js
+* Tailwind CSS
+* Socket.io client
+
+### **Backend**
+
+* FastAPI / Node.js
+* WebSockets (Socket.io / native)
+* PostgreSQL (rooms, games, players)
+* Redis (optional, later for game state)
+
+### **Deployment**
+
+* AWS / Vercel / Railway
+* Docker (optional)
+
+---
+
+## **9. MVP Scope**
+
+### **Included**
+
+* Guest login
+* Room creation & join
+* Undercover game
+* Real-time gameplay
+* Basic UI
+
+### **Excluded (Future)**
+
+* User accounts
+* Chat moderation
+* Matchmaking ranking
+* Monetization
+
+---
+
+## **10. Future Enhancements**
+
+* Add more games (Werewolf, Mafia, Quiz, Pictionary)
+* Voice chat integration
+* Spectator mode
+* Mobile app version
+* Leaderboards & stats
+* Theming and customization
+
+---
+
+## **11. Success Metrics**
+
+* Number of active rooms
+* Average session duration
+* Game completion rate
+* Player retention
+
+---
+
+## **12. Risks & Mitigation**
+
+| Risk               | Mitigation             |
+| ------------------ | ---------------------- |
+| Player disconnects | Reconnect logic        |
+| Cheating           | Server-side game logic |
+| Scalability        | Modular architecture   |
+
+---
+
+## **13. Open Questions**
+
+* Max players per room?
+* Public matchmaking vs invite-only?
+* Anonymous vs registered users?

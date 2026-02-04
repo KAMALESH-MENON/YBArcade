@@ -14,20 +14,20 @@ router = APIRouter()
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: dict[int, WebSocket] = {}
+        self.active_connections: dict[str, WebSocket] = {}
         self.games: Dict[str, UndercoverGame] = {} # Maps room_code to game instance
-        self.room_connections: Dict[str, List[int]] = {} # Maps room_code to list of client_ids
+        self.room_connections: Dict[str, List[str]] = {} # Maps room_code to list of client_ids
 
-    async def connect(self, websocket: WebSocket, client_id: int):
+    async def connect(self, websocket: WebSocket, client_id: str):
         await websocket.accept()
         self.active_connections[client_id] = websocket
 
-    def disconnect(self, client_id: int):
+    def disconnect(self, client_id: str):
         if client_id in self.active_connections:
             del self.active_connections[client_id]
         # This will be handled in the websocket_endpoint when user disconnects from room.
 
-    async def send_personal_message(self, message: Any, client_id: int):
+    async def send_personal_message(self, message: Any, client_id: str):
         if client_id in self.active_connections:
             try:
                 await self.active_connections[client_id].send_json(message)
@@ -51,7 +51,7 @@ manager = ConnectionManager()
 @router.websocket("/ws/{client_id}")
 async def websocket_endpoint(
     websocket: WebSocket,
-    client_id: int,
+    client_id: str,
     db: Session = Depends(deps.get_db),
 ):
     await manager.connect(websocket, client_id)
@@ -59,11 +59,11 @@ async def websocket_endpoint(
     username = f"User_{client_id}"
     user = crud.user.get_user_by_username(db=db, username=username)
     if not user:
-        user_in = UserCreate(username=username)
+        user_in = UserCreate(username=username, client_id=client_id)
         user = crud.user.create_user(db=db, user=user_in)
     
     # Send user info back to the client
-    await manager.send_personal_message({"type": "user_info", "user_id": user.id, "username": user.username}, client_id)
+    await manager.send_personal_message({"type": "user_info", "user_id": user.id, "username": user.username, "clientId": user.client_id}, client_id)
 
     room_code: str | None = None
     room = None
@@ -90,7 +90,7 @@ async def websocket_endpoint(
                     room_data = {
                         "type": "room_update",
                         "room_code": room.code,
-                        "players": {u.username: {"id": u.id, "is_host": u.id == room.host_id} for u in room.users},
+                        "players": {u.username: {"id": u.id, "is_host": u.id == room.host_id, "clientId": u.client_id} for u in room.users},
                         "host_id": room.host_id
                     }
                     await manager.broadcast(room_data, room.code)
@@ -116,6 +116,9 @@ async def websocket_endpoint(
                 else:
                     await manager.send_personal_message({"type": "error", "message": "Game not found or not in a room"}, client_id)
 
+            elif action_type == "chat_message":
+                if room_code:
+                    await manager.broadcast({"type": "chat_message", "username": user.username, "message": data.get("message")}, room_code)
             else:
                 if room_code:
                     await manager.broadcast({"type": "chat_message", "message": f"User_{client_id} says: {data.get('message')}"}, room_code)

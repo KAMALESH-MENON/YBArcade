@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.endpoints import websocket, room
+from app.api.endpoints import websocket, room, auth
 
 # CORS settings
 origins = [
@@ -23,6 +23,7 @@ app.add_middleware(
 
 app.include_router(websocket.router)
 app.include_router(room.router, prefix="/api")
+app.include_router(auth.router, prefix="/api")
 
 
 @app.get("/")

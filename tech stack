@@ -1,0 +1,193 @@
+## Online Multiplayer Arcade Web App
+
+---
+
+## **1. Frontend (Web App)**
+
+### **Framework**
+
+**React + Next.js**
+
+**Why?**
+
+* Fast development
+* SEO-friendly landing page
+* Easy routing (lobby → game → results)
+* Large ecosystem
+
+### **UI & Styling**
+
+**Tailwind CSS**
+
+**Why?**
+
+* Rapid UI building
+* Consistent design
+* Mobile responsive by default
+
+### **State Management**
+
+* React Context (for MVP)
+* Later: Zustand / Redux (optional)
+
+### **Real-Time Client**
+
+**Socket.IO Client**
+
+**Why?**
+
+* Handles reconnection automatically
+* Cleaner than raw WebSockets
+* Ideal for multiplayer games
+
+---
+
+## **2. Backend (Game Server)**
+
+### **Framework**
+
+**FastAPI (Python)** ✅
+
+**Why (big win for you):**
+
+* You already use FastAPI
+* Async support → perfect for real-time apps
+* Clean structure for services & game logic
+* Easy to extend for multiple games
+
+### **Real-Time Communication**
+
+**Socket.IO (Python implementation)**
+or
+**FastAPI WebSockets (MVP)**
+
+**Recommendation**
+
+* MVP → FastAPI WebSockets
+* Scale → Socket.IO (better rooms, reconnects)
+
+---
+
+## **3. Game Architecture (Important)**
+
+### **Game Engine Pattern**
+
+Use a **Game Interface / Strategy Pattern**
+
+Each game should have:
+
+* Game state
+* Start logic
+* Player action handlers
+* Win condition logic
+
+This allows:
+
+* Undercover today
+* Mafia / Quiz / Pictionary tomorrow
+* No rewrite of core system
+
+---
+
+## **4. Database**
+
+### **Primary Database**
+
+**PostgreSQL**
+
+**Use it for:**
+
+* Rooms
+* Players
+* Game metadata
+* Match history (optional MVP)
+
+### **ORM**
+
+**SQLAlchemy**
+
+You already know this → reuse skills 💪
+
+---
+
+## **5. In-Memory Game State**
+
+### **MVP**
+
+* Store game state in server memory (Python dict)
+
+### **Later (Scaling)**
+
+**Redis**
+
+* Shared state across instances
+* Faster real-time operations
+* Fault tolerance
+
+(You can skip Redis in MVP)
+
+---
+
+## **6. Authentication (MVP-Friendly)**
+
+### **MVP**
+
+* Guest username only
+* Session ID via cookies or socket ID
+
+### **Future**
+
+* JWT-based auth
+* OAuth (Google login)
+
+---
+
+## **7. Deployment**
+
+### **Frontend**
+
+* **Vercel** (best for Next.js)
+
+### **Backend**
+
+* **AWS EC2 / Railway / Render**
+* Dockerized FastAPI app
+
+### **WebSockets Support**
+
+Ensure hosting supports:
+
+* Persistent connections
+* WebSockets (important!)
+
+---
+
+## **8. Dev & Infra Tools**
+
+| Purpose         | Tool                |
+| --------------- | ------------------- |
+| Version Control | Git + GitHub        |
+| API Testing     | Postman             |
+| Real-time Debug | Socket.IO admin UI  |
+| CI/CD (later)   | GitHub Actions      |
+| Monitoring      | CloudWatch / Loguru |
+
+---
+
+## **9. Tech Stack Summary (One-Liner)**
+
+> **Frontend:** Next.js + Tailwind CSS + Socket.IO
+> **Backend:** FastAPI + WebSockets + SQLAlchemy
+> **Database:** PostgreSQL
+> **Real-Time:** WebSockets (Socket.IO later)
+> **Deployment:** Vercel + AWS / Railway
+
+---
+
+## **10. Why This Stack Is Perfect for Your Project**
+
+✅ Matches your existing skills
+✅ MVP can be built fast
+✅ Scales to multiple games
+✅ Interview-friendly
+✅ Production-ready

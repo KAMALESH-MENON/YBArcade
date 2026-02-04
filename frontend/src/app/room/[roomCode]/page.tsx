@@ -8,14 +8,11 @@ export default function RoomPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const roomCode = params.roomCode as string;
-  const clientIdFromUrl = searchParams.get("clientId");
-  const parsedClientId = clientIdFromUrl ? parseInt(clientIdFromUrl, 10) : null;
-
-  // Only call useWebSocket if parsedClientId is not null
-  const { sendMessage, isConnected } = useWebSocket(parsedClientId || 0);
+  const { sendMessage, isConnected } = useWebSocket();
   const gameContext = useContext(GameContext);
   const [description, setDescription] = useState("");
   const [votedPlayer, setVotedPlayer] = useState("");
+  const [chatMessage, setChatMessage] = useState("");
 
   useEffect(() => {
     if (isConnected) {
@@ -48,6 +45,15 @@ export default function RoomPage() {
       player: votedPlayer,
     });
     setVotedPlayer("");
+  };
+
+  const handleChatMessageSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage({
+      type: "chat_message",
+      message: chatMessage,
+    });
+    setChatMessage("");
   };
 
   return (
@@ -138,6 +144,29 @@ export default function RoomPage() {
           </form>
         </div>
       )}
+
+      <div className="mt-8 w-full max-w-5xl">
+        <h2 className="text-2xl">Chat</h2>
+        <div className="mt-4 h-64 overflow-y-auto rounded-md border border-gray-300 bg-gray-100 p-4">
+          {gameContext?.gameState.chatMessages?.map((msg, index) => (
+            <div key={index}>
+              <strong>{msg.username}:</strong> {msg.message}
+            </div>
+          ))}
+        </div>
+        <form onSubmit={handleChatMessageSubmit} className="mt-4 flex gap-2">
+          <input
+            type="text"
+            value={chatMessage}
+            onChange={(e) => setChatMessage(e.target.value)}
+            className="flex-grow rounded-md border border-gray-300 p-2"
+            placeholder="Type your message..."
+          />
+          <button type="submit" className="rounded-md bg-blue-500 px-4 py-2 text-white">
+            Send
+          </button>
+        </form>
+      </div>
     </main>
   );
 }
